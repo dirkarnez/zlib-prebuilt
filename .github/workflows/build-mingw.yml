@@ -1,0 +1,45 @@
+name: cpp-cmake-mingw-prebuilt-release-actions-workflow
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  
+jobs:
+  build:
+    name: Create Release
+    runs-on: windows-2019
+    env:
+      libraryName: zlib
+      cmakeInstallationPath: zlib-installation
+      tagName: v1.2.12
+      mingwTargetZip: zlib-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip
+    steps:
+      - name: check mingw version
+        run: gcc --version
+        
+      - name: git clone
+        shell: cmd
+        run: git clone https://github.com/madler/zlib.git && cd zlib && git checkout ${{ env.tagName }}
+
+      - name: cmake
+        shell: cmd
+        run: cd zlib && cmake.exe -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="build/${{ env.cmakeInstallationPath }}" -B./build
+        
+      - name: cmake build and install
+        shell: cmd
+        run: cd zlib\build && cmake --build . && cmake --install .
+        
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "zlib/build/${{ env.cmakeInstallationPath }}"
+          filename: "${{ env.mingwTargetZip }}"
+          
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "zlib/build/${{ env.cmakeInstallationPath }}/${{ env.mingwTargetZip }}"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
