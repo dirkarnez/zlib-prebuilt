@@ -13,7 +13,7 @@ jobs:
       libraryName: zlib
       cmakeInstallationPath: zlib-installation
       tagName: v1.2.12
-      mingwTargetZip: zlib-${{ github.ref_name }}-x86_64-posix-seh-rev0-8.1.0.zip
+      mingwTargetZip: zlib-${{ github.ref_name }}-mingw64-x86_64-posix-seh-rev0-8.1.0.zip
     steps:
       - name: check mingw version
         run: gcc --version
